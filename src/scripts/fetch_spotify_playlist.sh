@@ -114,7 +114,6 @@ jq -Rn '
 
 {
 	echo '<?xml version="1.0" encoding="UTF-8"?>'
-	echo '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
 	echo '<plist version="1.0">'
 	echo '<dict>'
 	echo $'\t<key>Major Version</key><integer>1</integer>'
