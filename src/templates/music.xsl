@@ -47,11 +47,11 @@
 					<head>
 						<meta charset="UTF-8" />
 						<title>Songlist</title>
-						<link rel="stylesheet" href="assets/css/quarantine.css" />
+						<link rel="stylesheet" href="/assets/css/quarantine.css" />
 						<xsl:if test="$enable_infinite_loading = 1">
 							<script src="https://unpkg.com/htmx.org@2.0.4" defer="defer"></script>
 						</xsl:if>
-						<script src="assets/js/music.js" defer="defer"></script>
+						<script src="/assets/js/music.js" defer="defer"></script>
 					</head>
 					<body>
 						<main class="album-mosaic" id="artist-stream" data-artists-source="artists.html" data-batch-size="{$max_artists}" data-total-artists="{$total-artists}" data-total-sections="{$total_sections}" data-start-index="{$artist_offset + 1}" data-end-index="{$initial-end}" data-next-section-index="{$initial_section_end + 1}" data-infinite-loading="{$enable_infinite_loading}">
@@ -200,7 +200,7 @@
 						<xsl:when test="$cover-url">
 							<xsl:value-of select="$cover-url" />
 						</xsl:when>
-						<xsl:otherwise>assets/covers/<xsl:value-of select="$location" />/cover.webp</xsl:otherwise>
+						<xsl:otherwise>/assets/covers/<xsl:value-of select="$location" />/cover.webp</xsl:otherwise>
 					</xsl:choose>
 				</xsl:attribute>
 			</img>
@@ -220,7 +220,7 @@
 						<xsl:when test="$cover-url">
 							<xsl:value-of select="$cover-url" />
 						</xsl:when>
-						<xsl:otherwise>../covers/<xsl:value-of select="$location" />/cover.webp</xsl:otherwise>
+						<xsl:otherwise>/assets/covers/<xsl:value-of select="$location" />/cover.webp</xsl:otherwise>
 					</xsl:choose>
 					<xsl:text>')</xsl:text>
 				</xsl:attribute>

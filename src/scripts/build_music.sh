@@ -3,18 +3,27 @@
 set -euo pipefail
 
 script_dir=${0:A:h}
-input_xml=${1:-"$script_dir/tracks.xml"}
+input_xml=${1:?Usage: $0 <input-xml> [template-xsl]}
 template_xsl=${2:-"$script_dir/../templates/music.xsl"}
-shell_output=${3:-"$script_dir/tracks.html"}
-artists_output=${4:-"$script_dir/artists.html"}
-full_output=${5:-"$script_dir/tracks-full.html"}
 batch_size=${BATCH_SIZE:-24}
+playlist_root=${PLAYLIST_ROOT:-"$script_dir/../../playlists"}
+input_name=${${input_xml:t}%.*}
+output_dir="$playlist_root/$input_name"
+index_output="$output_dir/index.html"
+artists_output="$output_dir/artists.html"
+
+if [[ ! -f "$input_xml" ]]; then
+	echo "Input XML not found: $input_xml" >&2
+	exit 1
+fi
+
+mkdir -p "$output_dir"
 
 xsltproc \
 	--stringparam artist_offset 0 \
 	--stringparam max_artists "$batch_size" \
 	--stringparam enable_infinite_loading 1 \
-	-o "$shell_output" \
+	-o "$index_output" \
 	"$template_xsl" \
 	"$input_xml"
 
@@ -23,14 +32,5 @@ xsltproc \
 	--stringparam max_artists 999999 \
 	--stringparam enable_infinite_loading 0 \
 	-o "$artists_output" \
-	"$template_xsl" \
-	"$input_xml"
-
-xsltproc \
-	--stringparam artist_offset 0 \
-	--stringparam max_artists 999999 \
-	--stringparam enable_infinite_loading 0 \
-	--stringparam render_full_page 1 \
-	-o "$full_output" \
 	"$template_xsl" \
 	"$input_xml"
