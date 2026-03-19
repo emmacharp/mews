@@ -189,7 +189,7 @@
 		</xsl:template>
 
 		<xsl:template match="key[text() = 'Location']" mode="image">
-			<xsl:variable name="location" select="following-sibling::string/text()" />
+			<xsl:variable name="location" select="following-sibling::string[1]/text()" />
 			<xsl:variable name="cover-url" select="../key[text() = 'Cover URL']/following-sibling::string[1]" />
 			<img alt="{$location}" loading="lazy">
 				<xsl:attribute name="src">
@@ -208,8 +208,8 @@
 
 		<xsl:template match="dict" mode="album">
 			<xsl:variable name="current-album" select="key[. = 'Album']/following-sibling::string[1]" />
-			<xsl:variable name="location" select="$current-album/following-sibling::key[text() = 'Location']/following-sibling::string/text()"></xsl:variable>
-			<xsl:variable name="cover-url" select="$current-album/following-sibling::key[text() = 'Cover URL']/following-sibling::string[1]" />
+			<xsl:variable name="location" select="key[text() = 'Location']/following-sibling::string[1]/text()"></xsl:variable>
+			<xsl:variable name="cover-url" select="key[text() = 'Cover URL']/following-sibling::string[1]" />
 			<article data-type="album">
 				<xsl:attribute name="style">
 					<xsl:text>--placeholder: url('</xsl:text>
