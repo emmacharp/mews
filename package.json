@@ -1,0 +1,23 @@
+{
+  "name": "Mews",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build:sef": "npx xslt3-he -xsl:src/templates/music.xsl -export:src/templates/music.sef.json -ns:##html5 -nogo && node src/scripts/export_music_sef.mjs",
+    "poc:xslt": "npm run --silent build:sef && node src/scripts/poc_xslt.mjs src/scripts/sample-playlist.xml src/templates/music.sef.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cloudflare/playwright": "^1.1.2",
+    "lightningcss-cli": "^1.24.1",
+    "saxonjs-he": "^3.0.0-beta2",
+    "wrangler": "^4.75.0",
+    "xslt3-he": "^3.0.0-beta2"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  }
+}
