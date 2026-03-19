@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Mews Playlist Builder</title>
+	
+</head>
+<body>
+	<main>
+		<section class="panel">
+			<h1>Build a Spotify playlist page.</h1>
+			<p>Paste a public Spotify playlist URL. Mews will extract the playlist, build the HTML, and publish it at a permanent URL under <code>/playlists/</code>.</p>
+
+			<form id="build-form">
+				<div>
+					<label for="playlist-url">Spotify Playlist URL</label>
+					<input id="playlist-url" name="playlist_url" type="url" inputmode="url" placeholder="https://open.spotify.com/playlist/..." required>
+				</div>
+				<button id="submit-button" type="submit">Build Playlist</button>
+			</form>
+
+			<section id="status" class="status" aria-live="polite">
+				<p>Waiting for a playlist URL.</p>
+			</section>
+		</section>
+	</main>
+	<script>
+		const form = document.querySelector("#build-form");
+		const input = document.querySelector("#playlist-url");
+		const button = document.querySelector("#submit-button");
+		const status = document.querySelector("#status");
+		let pollTimer = null;
+
+		const setStatus = (message, tone = "", extra = "") => {
+			status.dataset.tone = tone;
+			status.innerHTML = `<p>${message}</p>${extra ? `<p class="meta">${extra}</p>` : ""}`;
+		};
+
+		const stopPolling = () => {
+			if (!pollTimer) return;
+			clearTimeout(pollTimer);
+			pollTimer = null;
+		};
+
+		const pollStatus = async (statusUrl) => {
+			try {
+				const response = await fetch(statusUrl, {
+					headers: {
+						"Accept": "application/json",
+					},
+				});
+				const payload = await response.json();
+
+				if (!response.ok) {
+					setStatus(payload.error || "Unable to read build status.", "error");
+					stopPolling();
+					button.disabled = false;
+					return;
+				}
+
+				if (payload.status === "complete") {
+					setStatus("Playlist build complete.", "success", `<a href="${payload.public_url}">${payload.public_url}</a>`);
+					stopPolling();
+					button.disabled = false;
+					return;
+				}
+
+				if (payload.status === "failed") {
+					setStatus(payload.message || "Playlist build failed.", "error", payload.error || "");
+					stopPolling();
+					button.disabled = false;
+					return;
+				}
+
+				setStatus(payload.message || "Working on the playlist.", "", `Status: ${payload.status}`);
+				pollTimer = setTimeout(() => {
+					pollStatus(statusUrl);
+				}, 2500);
+			} catch (error) {
+				setStatus("Lost contact with the build service.", "error", error instanceof Error ? error.message : String(error));
+				stopPolling();
+				button.disabled = false;
+			}
+		};
+
+		form.addEventListener("submit", async (event) => {
+			event.preventDefault();
+			stopPolling();
+			button.disabled = true;
+			setStatus("Queueing playlist build.");
+
+			try {
+				const response = await fetch("/api/build", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Accept": "application/json",
+					},
+					body: JSON.stringify({
+						playlist_url: input.value.trim(),
+					}),
+				});
+				const payload = await response.json();
+
+				if (!response.ok) {
+					setStatus(payload.error || "Could not queue playlist build.", "error", payload.retry_after_ms ? `Retry after ${Math.ceil(payload.retry_after_ms / 1000)} seconds.` : "");
+					button.disabled = false;
+					return;
+				}
+
+				setStatus(payload.message || "Playlist build queued.", "", `Playlist id: ${payload.playlist_id}`);
+				await pollStatus(payload.status_url);
+			} catch (error) {
+				setStatus("Could not reach the build endpoint.", "error", error instanceof Error ? error.message : String(error));
+				button.disabled = false;
+			}
+		});
+	</script>
+</body>
+</html>
