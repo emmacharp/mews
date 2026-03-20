@@ -113,7 +113,10 @@ const handleBuild = async (request, response) => {
 
 	try {
 		const playlist = await extractSpotifyPlaylist(normalized.playlistUrl);
+		console.log(`[build:${normalized.playlistId}] extracted tracks=${playlist.tracks.length} url=${playlist.url || normalized.playlistUrl}`);
 		const pages = await renderPlaylistPages(playlist);
+		const renderedArtists = (pages.indexHtml.match(/<article data-type="artist"/g) || []).length;
+		console.log(`[build:${normalized.playlistId}] rendered artists=${renderedArtists}`);
 		await writePlaylistFiles(normalized.playlistId, pages);
 
 		json(response, 200, {
