@@ -11,13 +11,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@cloudflare/playwright": "^1.1.2",
+    "@xmldom/xmldom": "^0.8.11",
+    "cheerio": "^1.1.2",
     "lightningcss-cli": "^1.24.1",
+    "playwright": "^1.58.2",
     "saxonjs-he": "^3.0.0-beta2",
-    "wrangler": "^4.75.0",
     "xslt3-he": "^3.0.0-beta2"
-  },
-  "dependencies": {
-    "playwright": "^1.58.2"
   }
 }

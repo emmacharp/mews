@@ -30,65 +30,16 @@
 		const input = document.querySelector("#playlist-url");
 		const button = document.querySelector("#submit-button");
 		const status = document.querySelector("#status");
-		let pollTimer = null;
 
 		const setStatus = (message, tone = "", extra = "") => {
 			status.dataset.tone = tone;
 			status.innerHTML = `<p>${message}</p>${extra ? `<p class="meta">${extra}</p>` : ""}`;
 		};
 
-		const stopPolling = () => {
-			if (!pollTimer) return;
-			clearTimeout(pollTimer);
-			pollTimer = null;
-		};
-
-		const pollStatus = async (statusUrl) => {
-			try {
-				const response = await fetch(statusUrl, {
-					headers: {
-						"Accept": "application/json",
-					},
-				});
-				const payload = await response.json();
-
-				if (!response.ok) {
-					setStatus(payload.error || "Unable to read build status.", "error");
-					stopPolling();
-					button.disabled = false;
-					return;
-				}
-
-				if (payload.status === "complete") {
-					setStatus("Playlist build complete.", "success", `<a href="${payload.public_url}">${payload.public_url}</a>`);
-					stopPolling();
-					button.disabled = false;
-					return;
-				}
-
-				if (payload.status === "failed") {
-					setStatus(payload.message || "Playlist build failed.", "error", payload.error || "");
-					stopPolling();
-					button.disabled = false;
-					return;
-				}
-
-				setStatus(payload.message || "Working on the playlist.", "", `Status: ${payload.status}`);
-				pollTimer = setTimeout(() => {
-					pollStatus(statusUrl);
-				}, 2500);
-			} catch (error) {
-				setStatus("Lost contact with the build service.", "error", error instanceof Error ? error.message : String(error));
-				stopPolling();
-				button.disabled = false;
-			}
-		};
-
 		form.addEventListener("submit", async (event) => {
 			event.preventDefault();
-			stopPolling();
 			button.disabled = true;
-			setStatus("Queueing playlist build.");
+			setStatus("Building playlist.");
 
 			try {
 				const response = await fetch("/api/build", {
@@ -104,13 +55,13 @@
 				const payload = await response.json();
 
 				if (!response.ok) {
-					setStatus(payload.error || "Could not queue playlist build.", "error", payload.retry_after_ms ? `Retry after ${Math.ceil(payload.retry_after_ms / 1000)} seconds.` : "");
+					setStatus(payload.error || payload.message || "Could not build playlist.", "error", payload.retry_after_ms ? `Retry after ${Math.ceil(payload.retry_after_ms / 1000)} seconds.` : "");
 					button.disabled = false;
 					return;
 				}
 
-				setStatus(payload.message || "Playlist build queued.", "", `Playlist id: ${payload.playlist_id}`);
-				await pollStatus(payload.status_url);
+				setStatus(payload.message || "Playlist build complete.", "success", `<a href="${payload.public_url}">${payload.public_url}</a>`);
+				button.disabled = false;
 			} catch (error) {
 				setStatus("Could not reach the build endpoint.", "error", error instanceof Error ? error.message : String(error));
 				button.disabled = false;
